@@ -196,7 +196,6 @@
                   :allow-adding="true"
                   mode="row"
                 />
-
                 <DxColumn :width="125" data-field="tourId" caption="Tour">
                   <DxLookup
                     :data-source="alltours"
