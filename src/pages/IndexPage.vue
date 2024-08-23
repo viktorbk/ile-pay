@@ -73,17 +73,6 @@
                 <q-icon name="phone" />
               </template>
             </q-input>
-
-            <div>
-              <q-btn label="Submit" type="submit" color="primary" />
-              <q-btn
-                label="Reset"
-                type="reset"
-                color="primary"
-                flat
-                class="q-ml-sm"
-              />
-            </div>
           </q-form>
         </q-tab-panel>
 
@@ -185,7 +174,7 @@
               <DxDataGrid
                 :data-source="tours"
                 key-expr="id"
-                :show-column-lines="showColumnLines"
+                :show-column-lines="true"
                 :show-row-lines="true"
                 :row-alternation-enabled="true"
                 :show-borders="true"
@@ -233,6 +222,22 @@
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
+    <div class="q-pt-md">
+      <q-btn
+        label="Save Project"
+        type="submit"
+        color="green"
+        @click="saveProject"
+      />
+      <q-btn
+        label="Go Back"
+        type="reset"
+        color="primary"
+        flat
+        class="q-ml-sm"
+        @click="goHome"
+      />
+    </div>
     <q-dialog v-model="addDialog">
       <q-card class="my-card">
         <q-card-section> </q-card-section>
@@ -251,10 +256,15 @@
 <script>
 import { useQuasar } from "quasar";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { api } from "boot/axios";
+
+const self = this;
 
 export default {
   setup() {
     const $q = useQuasar();
+    const router = useRouter();
 
     const firstname = ref(null);
     const lastname = ref(null);
@@ -263,6 +273,10 @@ export default {
     const roomNr = ref(null);
     const email = ref(null);
     const mobile = ref(null);
+    const tab = ref("customer");
+    const projectName = ref(lastname);
+    const dateFrom = ref("yyyy-mm-dd");
+    const dateTo = ref("yyyy-mm-dd");
 
     return {
       firstname,
@@ -272,10 +286,10 @@ export default {
       email,
       mobile,
       roomNr,
-      tab: ref("customer"),
-      projectName: ref(lastname),
-      dateFrom: ref("yyyy-mm-dd"),
-      dateTo: ref("yyyy-mm-dd"),
+      tab,
+      projectName,
+      dateFrom,
+      dateTo,
       alltours: [
         { id: 1000, name: "Golden Circle", price: 4500 },
         { id: 2000, name: "Airport", price: 2500 },
@@ -287,6 +301,49 @@ export default {
       ], */
       columns: ref(["id", "tour", "price"]),
       addDialog: ref(false),
+
+      goHome() {
+        router.push({ name: "home" });
+      },
+
+      saveProject() {
+        const fr = new Date(dateFrom.value);
+        const from = fr.toISOString().substring(0, 10);
+        const to = new Date(dateTo.value).toISOString().substring(0, 10);
+        amount.value = 33222;
+        const body = {
+          nr: 3300,
+          name: projectName.value,
+          desscription: "desc",
+          company: "Edition Hotel",
+          from: from,
+          to: to,
+          customer: firstname.value + " " + lastname.value,
+          price: amount.value,
+          commission: amount.value * 0.1,
+        };
+        api
+          .post("/projects", body)
+          .then((response) => {
+            projects.value = response.data;
+          })
+          .catch(() => {
+            $q.notify({
+              color: "negative",
+              position: "top",
+              message: "Loading failed",
+              icon: "report_problem",
+            });
+          });
+
+        /*router.push({ name: "home" });
+        $q.notify({
+          color: "green-4",
+          textColor: "white",
+          icon: "cloud_done",
+          message: "Project saved ",
+        });*/
+      },
 
       onSubmit() {
         if (room.value !== true) {
